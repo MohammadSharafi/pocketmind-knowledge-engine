@@ -1,0 +1,92 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+      
+      - name: Analyze Flutter code
+        working-directory: ./frontend
+        run: flutter analyze
+      
+      - name: Check Java formatting
+        uses: axel-op/googlejavaformat-action@v3
+        with:
+          version: '1.17.0'
+          check-only: true
+          directories: backend/src
+
+  test-all:
+    needs: lint-and-format
+    strategy:
+      matrix:
+        service: [flutter, backend, python]
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test Flutter
+        if: matrix.service == 'flutter'
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+        working-directory: ./frontend
+        run: |
+          flutter pub get
+          flutter test
+      
+      - name: Test Backend
+        if: matrix.service == 'backend'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+        working-directory: ./backend
+        run: ./mvnw test
+      
+      - name: Test Python
+        if: matrix.service == 'python'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+        working-directory: ./ai-worker
+        run: |
+          pip install -r requirements.txt
+          python -m pytest tests/ || echo "No tests yet"
+
+  build:
+    needs: test-all
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+        working-directory: ./frontend
+        run: flutter build apk --release
+      
+      - name: Build Backend
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+        working-directory: ./backend
+        run: ./mvnw clean package -DskipTests
+

@@ -1,9 +1,10 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter/material.dart';
+import '../config/app_config.dart';
 
 class GraphQLService {
-  static const String graphqlEndpoint = 'http://localhost:8080/graphql';
-  static const String wsEndpoint = 'ws://localhost:8080/graphql-ws';
+  static String get graphqlEndpoint => AppConfig.graphqlEndpoint;
+  static String get wsEndpoint => AppConfig.wsEndpoint;
 
   static HttpLink httpLink = HttpLink(graphqlEndpoint);
 

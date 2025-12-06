@@ -106,100 +106,153 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
             );
           }
         },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Text Input Section
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title (optional)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _textController,
-                decoration: const InputDecoration(
-                  labelText: 'Text Content',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 5,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _uploadText,
-                icon: const Icon(Icons.text_fields),
-                label: const Text('Save Text'),
-              ),
-              const Divider(height: 32),
-              // Audio Recording Section
-              const Text(
-                'Audio Recording',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+        child: BlocBuilder<MemoryBloc, MemoryState>(
+          builder: (context, state) {
+            final isUploading = state is MemoryUploading;
+            
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (!_isRecording)
-                    ElevatedButton.icon(
-                      onPressed: _startRecording,
-                      icon: const Icon(Icons.mic),
-                      label: const Text('Start Recording'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
+                  // Text Input Section
+                  TextField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Title (optional)',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.title),
+                    ),
+                    enabled: !isUploading,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _textController,
+                    decoration: const InputDecoration(
+                      labelText: 'Text Content',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.text_fields),
+                    ),
+                    maxLines: 5,
+                    enabled: !isUploading,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: isUploading ? null : _uploadText,
+                    icon: isUploading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.text_fields),
+                    label: Text(isUploading ? 'Uploading...' : 'Save Text'),
+                  ),
+                  const Divider(height: 32),
+                  // Audio Recording Section
+                  Row(
+                    children: [
+                      const Icon(Icons.mic, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Audio Recording',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                    )
-                  else
-                    ElevatedButton.icon(
-                      onPressed: _stopRecording,
-                      icon: const Icon(Icons.stop),
-                      label: const Text('Stop Recording'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.white,
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (!_isRecording)
+                        ElevatedButton.icon(
+                          onPressed: isUploading ? null : _startRecording,
+                          icon: const Icon(Icons.mic),
+                          label: const Text('Start Recording'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                        )
+                      else
+                        ElevatedButton.icon(
+                          onPressed: _stopRecording,
+                          icon: const Icon(Icons.stop),
+                          label: const Text('Stop Recording'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (_recordingPath != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green[200]!),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green[700]),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Recording saved: ${_recordingPath!.split('/').last}',
+                              style: TextStyle(color: Colors.green[900]),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: isUploading ? null : _uploadAudio,
+                      icon: isUploading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.upload),
+                      label: Text(isUploading ? 'Uploading...' : 'Upload Audio'),
+                    ),
+                  ],
+                  const Divider(height: 32),
+                  // Image Upload Section
+                  Row(
+                    children: [
+                      const Icon(Icons.image, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Image Upload',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: isUploading ? null : _pickImage,
+                        icon: const Icon(Icons.image),
+                        label: const Text('Pick Image'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: isUploading ? null : _pickFile,
+                        icon: const Icon(Icons.file_upload),
+                        label: const Text('Pick File'),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              if (_recordingPath != null) ...[
-                const SizedBox(height: 16),
-                Text('Recording saved: ${_recordingPath!.split('/').last}'),
-                const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: _uploadAudio,
-                  icon: const Icon(Icons.upload),
-                  label: const Text('Upload Audio'),
-                ),
-              ],
-              const Divider(height: 32),
-              // Image Upload Section
-              const Text(
-                'Image Upload',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.image),
-                    label: const Text('Pick Image'),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _pickFile,
-                    icon: const Icon(Icons.file_upload),
-                    label: const Text('Pick File'),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
