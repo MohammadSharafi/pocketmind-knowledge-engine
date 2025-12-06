@@ -1,0 +1,66 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# Flutter
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/.pub-cache/
+frontend/.pub/
+frontend/build/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+frontend/.pub/
+frontend/pubspec.lock
+
+# Spring Boot
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
+
+# Python
+ai-worker/__pycache__/
+ai-worker/*.pyc
+ai-worker/*.pyo
+ai-worker/*.pyd
+ai-worker/.Python
+ai-worker/venv/
+ai-worker/env/
+ai-worker/.venv
+ai-worker/.env
+ai-worker/*.egg-info/
+ai-worker/dist/
+ai-worker/build/
+ai-worker/.pytest_cache/
+ai-worker/.mypy_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+
+# Model files (too large for git)
+*.bin
+*.gguf
+*.pt
+*.pth
+

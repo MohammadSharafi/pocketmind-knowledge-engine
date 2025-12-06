@@ -1,0 +1,65 @@
+type Memory {
+  id: ID!
+  title: String!
+  content: String
+  summary: String
+  fileUrl: String
+  fileType: FileType!
+  createdAt: String!
+  updatedAt: String!
+  processingStatus: ProcessingStatus!
+  tags: [Tag!]!
+  embeddingId: String
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  color: String
+}
+
+enum FileType {
+  AUDIO
+  IMAGE
+  TEXT
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String
+  createdAt: String!
+}
+
+type SearchResult {
+  memory: Memory!
+  score: Float!
+}
+
+type Query {
+  memories(limit: Int, offset: Int): [Memory!]!
+  memory(id: ID!): Memory
+  search(query: String!, limit: Int): [SearchResult!]!
+  tags: [Tag!]!
+}
+
+type Mutation {
+  uploadText(content: String!, title: String): Memory!
+  createTag(name: String!, color: String): Tag!
+  addTagToMemory(memoryId: ID!, tagId: ID!): Memory!
+  removeTagFromMemory(memoryId: ID!, tagId: ID!): Memory!
+  deleteMemory(id: ID!): Boolean!
+}
+
+type Subscription {
+  memoryProcessed(memoryId: ID!): Memory!
+  memoryUpdated: Memory!
+}
+
