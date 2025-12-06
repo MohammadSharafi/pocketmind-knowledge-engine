@@ -96,6 +96,9 @@ public class Memory {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title cannot be null or empty");
         }
+        if (title.length() > 200) {
+            throw new IllegalArgumentException("Title cannot exceed 200 characters");
+        }
         this.title = title;
     }
 
@@ -104,6 +107,9 @@ public class Memory {
     }
 
     public void setContent(String content) {
+        if (content != null && content.length() > 100000) {
+            throw new IllegalArgumentException("Content cannot exceed 100,000 characters");
+        }
         this.content = content;
     }
 

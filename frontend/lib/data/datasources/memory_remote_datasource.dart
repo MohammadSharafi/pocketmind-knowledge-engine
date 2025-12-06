@@ -1,5 +1,6 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../core/error/failures.dart';
+import '../../core/utils/retry_helper.dart';
 import '../../graphql/queries.dart';
 import '../../graphql/mutations.dart';
 import '../models/memory_model.dart';
@@ -20,31 +21,36 @@ class MemoryRemoteDataSourceImpl implements MemoryRemoteDataSource {
 
   @override
   Future<List<MemoryModel>> getMemories({int? limit, int? offset}) async {
-    try {
-      final result = await client.query(QueryOptions(
-        document: gql(GraphQLQueries.getMemories),
-        variables: {
-          'limit': limit,
-          'offset': offset,
-        },
-      ));
+    return RetryHelper.retry(
+      operation: () async {
+        try {
+          final result = await client.query(QueryOptions(
+            document: gql(GraphQLQueries.getMemories),
+            variables: {
+              'limit': limit,
+              'offset': offset,
+            },
+          ));
 
-      if (result.hasException) {
-        throw ServerFailure(
-          result.exception?.graphqlErrors.first.message ?? 'Unknown error',
-        );
-      }
+          if (result.hasException) {
+            throw ServerFailure(
+              result.exception?.graphqlErrors.first.message ?? 'Unknown error',
+            );
+          }
 
-      final memories = (result.data?['memories'] as List<dynamic>?)
-              ?.map((json) => MemoryModel.fromJson(json))
-              .toList() ??
-          [];
+          final memories = (result.data?['memories'] as List<dynamic>?)
+                  ?.map((json) => MemoryModel.fromJson(json))
+                  .toList() ??
+              [];
 
-      return memories;
-    } catch (e) {
-      if (e is Failure) rethrow;
-      throw NetworkFailure('Failed to fetch memories: ${e.toString()}');
-    }
+          return memories;
+        } catch (e) {
+          if (e is Failure) rethrow;
+          throw NetworkFailure('Failed to fetch memories: ${e.toString()}');
+        }
+      },
+      retryIf: (error) => error is NetworkFailure,
+    );
   }
 
   @override

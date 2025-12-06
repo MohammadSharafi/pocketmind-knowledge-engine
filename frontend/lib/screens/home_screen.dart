@@ -9,6 +9,8 @@ import 'memory_detail_screen.dart';
 import 'search_screen.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../graphql/subscriptions.dart';
+import '../presentation/widgets/loading_shimmer.dart';
+import '../core/error/error_handler.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -33,7 +35,7 @@ class HomeScreen extends StatelessWidget {
       body: BlocBuilder<MemoryBloc, MemoryState>(
         builder: (context, state) {
           if (state is MemoryLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingShimmer();
           }
 
           if (state is MemoryError) {
@@ -55,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      state.message,
+                      ErrorHandler.getUserFriendlyMessage(state.failure),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[600],
